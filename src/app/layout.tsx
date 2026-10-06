@@ -21,8 +21,9 @@ const clay = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "TechMunda Control Tower",
-  description: "TechMunda × Curevanta Project Control Tower — execution operating system",
+  title: "Curevanta — Care. Closer to You.",
+  description:
+    "Curevanta healthcare app — patient booking, live tracking, and doctor dispatch. TechMunda × Curevanta.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

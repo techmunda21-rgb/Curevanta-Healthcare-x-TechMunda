@@ -100,6 +100,58 @@ body {
   background: var(--background);
   color: var(--text-primary);
   font-family: var(--font-sans), Inter, "DM Sans", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Curevanta responsive + speed primitives */
+.cv-viewport {
+  background: linear-gradient(165deg, #e8f6f6 0%, #f7fafa 45%, #eef5f8 100%);
+  contain: layout style;
+}
+
+.cv-frame {
+  contain: layout;
+}
+
+.cv-scroll {
+  -webkit-overflow-scrolling: touch;
+  content-visibility: auto;
+}
+
+.cv-page {
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  .cv-page {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cv-page {
+    padding-inline: 2rem;
+  }
+}
+
+.cv-grid-services {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .cv-grid-services {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cv-grid-services {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 h1,
@@ -267,6 +319,17 @@ h3,
 }
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
+@keyframes cv-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
