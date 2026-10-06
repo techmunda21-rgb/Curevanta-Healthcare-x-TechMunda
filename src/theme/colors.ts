@@ -1,0 +1,46 @@
+export const colors = {
+  primary: "#009B9A",
+  primaryPressed: "#007A7A",
+  primarySoft: "#E6F5F5",
+  accent: "#48D7D2",
+  background: "#F7FAFA",
+  surface: "#FFFFFF",
+  surfaceElevated: "#FFFFFF",
+  surfaceMuted: "#F2F5F5",
+  textPrimary: "#30363A",
+  textSecondary: "#5C6569",
+  textMuted: "#6B7578",
+  border: "#D7E0E0",
+  success: "#1B7F5A",
+  warning: "#B7791F",
+  error: "#C62828",
+  info: "#0B6E99",
+  sidebar: "#30363A",
+  sidebarText: "#D7E0E0",
+  sidebarTextActive: "#FFFFFF",
+} as const;
+
+/** Dark-mode-ready structure — not enabled in UI yet */
+export const colorsDark = {
+  primary: "#2BB5B3",
+  primaryPressed: "#009B9A",
+  primarySoft: "#163A3A",
+  accent: "#48D7D2",
+  background: "#1A1E20",
+  surface: "#24292C",
+  surfaceElevated: "#2C3236",
+  surfaceMuted: "#1F2427",
+  textPrimary: "#F2F5F5",
+  textSecondary: "#B8C0C2",
+  textMuted: "#8A9497",
+  border: "#3A4246",
+  success: "#3D9B74",
+  warning: "#D4A017",
+  error: "#E05555",
+  info: "#3D9BC9",
+  sidebar: "#14181A",
+  sidebarText: "#B8C0C2",
+  sidebarTextActive: "#FFFFFF",
+} as const;
+
+export type ColorToken = keyof typeof colors;

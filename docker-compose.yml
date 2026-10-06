@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: control-tower-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: controltower
+      POSTGRES_PASSWORD: controltower
+      POSTGRES_DB: control_tower
+    ports:
+      - "5432:5432"
+    volumes:
+      - control_tower_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U controltower -d control_tower"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  control_tower_pgdata:
