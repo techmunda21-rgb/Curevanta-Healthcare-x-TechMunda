@@ -2,6 +2,10 @@
   "name": "techmunda-control-tower",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "apps/patient-mobile",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -15,7 +19,9 @@
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "mobile:patient": "npm run start --workspace=patient-mobile",
+    "typecheck:packages": "npm run typecheck --workspaces --if-present"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

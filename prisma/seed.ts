@@ -900,8 +900,51 @@ async function main() {
     ],
   });
 
+  const mobilePassword = await bcrypt.hash("Curevanta@2026", 10);
+  const mobilePatient = await prisma.mobileAccount.upsert({
+    where: { email: "patient@curevanta.com" },
+    update: { passwordHash: mobilePassword, name: "Aanya Patel", role: "PATIENT" },
+    create: {
+      email: "patient@curevanta.com",
+      phone: "+919876543210",
+      passwordHash: mobilePassword,
+      name: "Aanya Patel",
+      role: "PATIENT",
+    },
+  });
+  const mobileDoctor = await prisma.mobileAccount.upsert({
+    where: { email: "doctor@curevanta.com" },
+    update: { passwordHash: mobilePassword, name: "Dr. Meera Shah", role: "DOCTOR" },
+    create: {
+      email: "doctor@curevanta.com",
+      phone: "+919876543211",
+      passwordHash: mobilePassword,
+      name: "Dr. Meera Shah",
+      role: "DOCTOR",
+    },
+  });
+  await prisma.careProviderProfile.upsert({
+    where: { accountId: mobileDoctor.id },
+    update: {
+      specialty: "General Physician",
+      isVerified: true,
+      isOnline: true,
+      rating: 4.9,
+    },
+    create: {
+      accountId: mobileDoctor.id,
+      specialty: "General Physician",
+      isVerified: true,
+      isOnline: true,
+      rating: 4.9,
+    },
+  });
+  void mobilePatient;
+
   console.log("✅ Seed complete");
   console.log("   Login: founder@techmunda.com / Founder@2026");
+  console.log("   Mobile patient: patient@curevanta.com / Curevanta@2026");
+  console.log("   Mobile doctor:  doctor@curevanta.com / Curevanta@2026");
   console.log("   Project:", project.code, project.name);
 }
 

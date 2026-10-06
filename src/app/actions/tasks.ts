@@ -71,21 +71,31 @@ export async function createTaskAction(
 ): Promise<void | ActionResult<{ id: string; taskCode: string }>> {
   const session = await requirePermission(PERMISSIONS.TASK_MANAGE);
 
+  const hoursRaw =
+    raw instanceof FormData ? raw.get("estimatedHours") : undefined;
+  const hoursNum =
+    hoursRaw === null || hoursRaw === undefined || hoursRaw === ""
+      ? 4
+      : Number(hoursRaw);
+
   const payload =
     raw instanceof FormData
       ? {
-          title: raw.get("title"),
-          description: raw.get("description") || undefined,
-          projectId: raw.get("projectId"),
-          assigneeId: raw.get("assigneeId") || undefined,
-          priority: raw.get("priority") || "P2",
-          estimatedHours: Number(raw.get("estimatedHours") || 0),
-          dueDate: raw.get("dueDate") || undefined,
+          title: String(raw.get("title") ?? "").trim(),
+          description: String(raw.get("description") || "") || undefined,
+          projectId: String(raw.get("projectId") ?? ""),
+          assigneeId: String(raw.get("assigneeId") || "") || undefined,
+          priority: String(raw.get("priority") || "P2"),
+          estimatedHours: Number.isFinite(hoursNum) && hoursNum >= 0 ? hoursNum : 4,
+          dueDate: String(raw.get("dueDate") || "") || undefined,
         }
       : raw;
 
-  const parsed = createTaskSchema.parse(payload);
-  const task = await createTask(parsed, session.user.id);
+  const parsed = createTaskSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid task payload");
+  }
+  const task = await createTask(parsed.data, session.user.id);
 
   revalidatePath("/tasks");
   revalidatePath("/kanban");

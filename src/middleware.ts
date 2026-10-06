@@ -17,7 +17,11 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  if (pathname.startsWith("/api/auth") || pathname.startsWith("/api/live")) {
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/live") ||
+    pathname.startsWith("/api/mobile")
+  ) {
     return NextResponse.next();
   }
 

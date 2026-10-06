@@ -1102,3 +1102,128 @@ model AIExecution {
 
   @@index([kind, createdAt])
 }
+
+// ─────────────────────────────────────────────
+// MOBILE CARE DOMAIN (additive — consumer apps)
+// Separate from Control Tower SystemRole users.
+// PostGIS upgrade planned later; lat/lon floats for P0.
+// ─────────────────────────────────────────────
+
+enum MobileRole {
+  PATIENT
+  DOCTOR
+  CAREER
+}
+
+enum CareServiceKind {
+  DOCTOR_AT_HOME
+  NURSE_AT_HOME
+  DIAGNOSTICS
+  PHYSIOTHERAPY
+  FOLLOW_UP
+}
+
+enum CareBookingStatus {
+  REQUEST_CREATED
+  SEARCHING_PROVIDER
+  PROVIDER_NOTIFIED
+  PROVIDER_ACCEPTED
+  ON_THE_WAY
+  ARRIVING
+  ARRIVED
+  SERVICE_STARTED
+  SERVICE_COMPLETED
+  PAYMENT_PENDING
+  PAYMENT_COMPLETED
+  CLOSED
+  CANCELLED
+  EXPIRED
+  NO_PROVIDER_FOUND
+  NO_SHOW
+  DISPUTED
+}
+
+model MobileAccount {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  phone        String?
+  passwordHash String
+  name         String
+  role         MobileRole
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  sessions     MobileSession[]
+  doctorProfile CareProviderProfile?
+  patientBookings CareBooking[] @relation("PatientBookings")
+  providerBookings CareBooking[] @relation("ProviderBookings")
+
+  @@index([role])
+}
+
+model MobileSession {
+  id               String        @id @default(cuid())
+  accountId        String
+  account          MobileAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tokenHash        String        @unique
+  refreshTokenHash String?       @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime      @default(now())
+
+  @@index([accountId])
+}
+
+model CareProviderProfile {
+  id              String        @id @default(cuid())
+  accountId       String        @unique
+  account         MobileAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  specialty       String
+  rating          Float         @default(4.8)
+  isVerified      Boolean       @default(true)
+  isOnline        Boolean       @default(false)
+  lastLatitude    Float?
+  lastLongitude   Float?
+  lastLocationAt  DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model CareBooking {
+  id              String            @id @default(cuid())
+  patientId       String
+  patient         MobileAccount     @relation("PatientBookings", fields: [patientId], references: [id])
+  providerId      String?
+  provider        MobileAccount?    @relation("ProviderBookings", fields: [providerId], references: [id])
+  serviceKind     CareServiceKind
+  status          CareBookingStatus @default(REQUEST_CREATED)
+  addressLine     String
+  latitude        Float
+  longitude       Float
+  notes           String?
+  etaMinutes      Int?
+  idempotencyKey  String            @unique
+  acceptedAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  events          CareBookingEvent[]
+
+  @@index([patientId, status])
+  @@index([providerId, status])
+  @@index([status, createdAt])
+}
+
+model CareBookingEvent {
+  id        String            @id @default(cuid())
+  bookingId String
+  booking   CareBooking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  status    CareBookingStatus
+  message   String?
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime          @default(now())
+
+  @@index([bookingId, createdAt])
+}

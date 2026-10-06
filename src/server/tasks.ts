@@ -24,7 +24,7 @@ export const createTaskSchema = z.object({
   workstreamId: z.string().optional().nullable(),
   assigneeId: z.string().optional().nullable(),
   priority: z.enum(["P0", "P1", "P2", "P3"]).default("P2"),
-  estimatedHours: z.number().min(0).default(0),
+  estimatedHours: z.coerce.number().finite().min(0).max(1000).default(4),
   dueDate: z.union([z.string(), z.date()]).optional().nullable(),
   founderApprovalRequired: z.boolean().optional(),
 });
