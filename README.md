@@ -6,36 +6,50 @@ Monorepo for **Curevanta** healthcare ops (Control Tower CRM), patient/doctor we
 
 ---
 
-## Live local (quick)
+## Live demo (localhost)
 
-After `docker compose up -d`, `npm install`, `npx prisma db push`, and `npm run db:seed`:
+There is **no public hosted demo yet** — use the local app. From the repo root:
 
 ```bash
+# 1. Postgres
+docker compose up -d
+
+# 2. Env (once) — copy .env.example → .env and set AUTH_SECRET
+# 3. Install + schema + seed
+npm install
+npx prisma db push
+npm run db:seed
+
+# 4. Start the live demo
 npm run dev
-# → http://localhost:3000
 ```
+
+Open the demo:
+
+| Page | URL |
+|------|-----|
+| **Login (start here)** | http://localhost:3000/login |
+| Patient home | http://localhost:3000/patient/home |
+| Doctor | http://localhost:3000/doctor |
+| Ops dashboard | http://localhost:3000/dashboard |
 
 | Port | Service |
 |------|---------|
-| **3000** | Next.js Control Tower + patient/doctor web (default) |
+| **3000** | Next.js live demo (`npm run dev`) |
 | **5432** | PostgreSQL (`docker compose`) |
 
-| URL | Purpose |
-|-----|---------|
-| http://localhost:3000/login | Sign in |
-| http://localhost:3000/patient/home | Patient showcase |
-| http://localhost:3000/doctor | Doctor demo |
-| http://localhost:3000/dashboard | Ops Control Tower |
+**Demo credentials** (seeded; password for all web roles: `Founder@2026`):
 
-**Web demo passwords are all `Founder@2026`:**
+| Role | Email | Password |
+|------|--------|----------|
+| Patient | `patient.dev@techmunda.com` | `Founder@2026` |
+| Doctor | `doctor.dev@techmunda.com` | `Founder@2026` |
+| Founder / Ops | `founder@techmunda.com` | `Founder@2026` |
 
-| Role | Email |
-|------|--------|
-| Patient | `patient.dev@techmunda.com` |
-| Doctor | `doctor.dev@techmunda.com` |
-| Founder / Ops | `founder@techmunda.com` |
+On the login page, use the **Patient / Doctor / Founder** chips for one-click demo sign-in.
 
-If port 3000 is busy: `npx next dev -p 3001` and open http://localhost:3001 instead.
+If **port 3000 is busy**: `npx next dev -p 3001` → http://localhost:3001/login  
+If login says *Invalid credentials*: ensure Docker Postgres is up, then re-run `npm run db:seed`.
 
 ---
 
