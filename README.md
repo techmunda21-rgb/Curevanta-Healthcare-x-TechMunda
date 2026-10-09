@@ -1,64 +1,171 @@
 # Curevanta × TechMunda — Control Tower & Mobile
 
-Production-oriented monorepo for **Curevanta healthcare** ops CRM, consumer web shells, Flutter portals, and Expo React Native apps.
+Monorepo for **Curevanta** healthcare ops (Control Tower CRM), patient/doctor web demos, Expo React Native apps, Flutter portals, and synthetic India healthcare training data.
+
+> **Seed / synthetic data only** in local demos — not real TechMunda or Curevanta company or patient records.
+
+---
+
+## Requirements
+
+| Tool | Version |
+|------|---------|
+| Node.js | 20+ (22 recommended) |
+| npm | 10+ |
+| Docker Desktop | For local PostgreSQL |
+| Git | Latest |
+| Flutter (optional) | 3.x — `mobile/` only |
+| Expo CLI (optional) | via `npx expo` — patient mobile |
+
+---
+
+## Clone
+
+```bash
+git clone https://github.com/techmunda21-rgb/Curevanta-Healthcare-x-TechMunda.git
+cd Curevanta-Healthcare-x-TechMunda
+```
+
+If the GitHub remote name differs, replace the URL with your fork.
+
+---
 
 ## Repository structure
 
 ```text
-curevanta-control-tower/
-├── src/                      # Next.js Control Tower + patient/doctor web demos
-│   ├── app/                  # App Router (ops CRM, auth, APIs)
-│   │   └── api/mobile/       # Mobile booking vertical-slice API
-│   ├── lib/mobile/           # Mobile auth/booking helpers
-│   ├── server/               # Domain services (tasks, dashboard, …)
-│   └── theme/                # Design tokens (web)
-├── prisma/                   # PostgreSQL schema + seed
+.
+├── src/                 # Next.js App Router — Control Tower + patient/doctor web UI
+│   └── app/api/mobile/  # Mobile booking API (vertical slice)
+├── prisma/              # Schema + seed
 ├── apps/
-│   ├── patient-mobile/       # Expo (React Native) patient app
-│   ├── doctor-mobile/        # Reserved (README)
-│   └── career-mobile/        # Reserved (README)
-├── packages/
-│   ├── design-tokens/        # Shared Curevanta tokens
-│   ├── mobile-ui/            # RN UI primitives
-│   ├── api-client/           # Typed mobile API client
-│   ├── auth/                 # SecureStore token helpers
-│   ├── config/ types/ validation/
-├── mobile/                   # Flutter 3-portal app (Patient / Doctor / Ops)
-├── docs/                     # Migration, go-live, store checklists
-├── .github/workflows/        # CI/CD (Railway deploy when token set)
-├── docker-compose.yml        # Local Postgres
-├── railway.json              # Railway build/start
-└── package.json              # npm workspaces root
+│   ├── patient-mobile/  # Expo (React Native) patient app
+│   ├── doctor-mobile/   # Placeholder
+│   └── career-mobile/   # Placeholder
+├── packages/            # Shared design-tokens, mobile-ui, api-client, auth, …
+├── mobile/              # Flutter 3-portal (Patient / Doctor / Ops)
+├── data/synthetic/      # India healthcare synthetic XLSX + import docs
+├── data/models/         # Trained latency model artifact (generated)
+├── scripts/             # Import / training scripts
+├── docs/                # Migration, go-live, accuracy dataset
+├── .github/workflows/   # CI (lint/test; Railway deploy if token set)
+├── docker-compose.yml
+├── railway.json
+└── package.json         # npm workspaces root
 ```
 
-## Quick start — Control Tower (Next.js)
+---
+
+## 1. Environment
+
+Create a root `.env` (never commit this file):
+
+```env
+# Local Postgres (docker-compose defaults)
+DATABASE_URL="postgresql://controltower:controltower@localhost:5432/control_tower?schema=public"
+
+# Auth.js / NextAuth
+AUTH_SECRET="replace-with-a-long-random-string"
+AUTH_TRUST_HOST="true"
+# Optional when deploying behind a public URL:
+# NEXTAUTH_URL="http://localhost:3000"
+
+# Optional AI (without this, AI uses deterministic fallbacks)
+# GEMINI_API_KEY=""
+```
+
+Generate a secret (example):
 
 ```bash
-docker compose up -d
-npm install
-npx prisma db push
-npm run db:seed
-npm run dev
-# or: npx next dev -p 3001
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Open http://localhost:3000 (or :3001)
+Patient Expo app (optional) — copy `apps/patient-mobile/.env.example` to `.env`:
 
-### Demo logins (seed)
+```env
+EXPO_PUBLIC_APP_ENV=development
+EXPO_PUBLIC_API_BASE_URL=http://localhost:3000
+```
+
+Use your machine LAN IP instead of `localhost` when testing on a physical phone.
+
+---
+
+## 2. Database
+
+```bash
+# Start PostgreSQL
+docker compose up -d
+
+# Install dependencies (also runs prisma generate)
+npm install
+
+# Apply schema
+npx prisma db push
+
+# Seed Control Tower demo data + accuracy annotations
+npm run db:seed
+```
+
+### Optional — synthetic India healthcare data + latency model
+
+Place or keep the workbook at:
+
+`data/synthetic/Curevanta_India_Healthcare_Synthetic_Training_Data.xlsx`
+
+Then:
+
+```bash
+npm run data:import-synthetic
+```
+
+This imports synthetic providers/patients/careers and trains an **operational dispatch latency** model (ETA minutes — not clinical diagnosis).  
+See `data/synthetic/README.md`.
+
+---
+
+## 3. Run Control Tower (web)
+
+```bash
+npm run dev
+# or fixed port:
+npx next dev -p 3001
+```
+
+| URL | Purpose |
+|-----|---------|
+| http://localhost:3000 | Default Next.js |
+| http://localhost:3000/login | Auth |
+| http://localhost:3000/dashboard | Ops Control Tower |
+| http://localhost:3000/patient/home | Patient UI (showcase) |
+| http://localhost:3000/doctor | Doctor app demo |
+
+### Demo logins (after `npm run db:seed`)
 
 | Role | Email | Password |
 |------|--------|----------|
 | Founder / Ops | `founder@techmunda.com` | `Founder@2026` |
+| CTO | `cto@techmunda.com` | `Founder@2026` |
+| PM | `pm@techmunda.com` | `Founder@2026` |
 | Mobile patient API | `patient@curevanta.com` | `Curevanta@2026` |
 | Mobile doctor API | `doctor@curevanta.com` | `Curevanta@2026` |
 
-## Expo patient app
+Login page also has **Patient / Doctor / Founder** quick chips for web demos.
+
+---
+
+## 4. Expo patient app
 
 ```bash
 npm run mobile:patient
+# or
+cd apps/patient-mobile && npx expo start
 ```
 
-## Flutter portals
+Ensure the API base URL points at your running Next server.
+
+---
+
+## 5. Flutter portals (optional)
 
 ```bash
 cd mobile
@@ -72,30 +179,85 @@ flutter run
 | Doctor | `doctor@curevanta.app` | `Doctor@2026` |
 | Ops | `founder@techmunda.com` | `Founder@2026` |
 
-## Stack
+---
 
-- Next.js 15 · React 19 · TypeScript · Tailwind · Prisma · PostgreSQL · Auth.js
-- Expo / React Native (patient mobile) · shared packages
-- Flutter (legacy 3-portal UI)
-- Neon (cloud SQL) · Railway config · Cloudflare DNS runbook in `docs/GO_LIVE_CLOUDFLARE.md`
-
-## Environment
-
-Copy `.env.example` patterns. **Never commit** `.env`. Optional: `GEMINI_API_KEY`.
-
-## Docs
-
-- `docs/REACT_NATIVE_MIGRATION_AUDIT.md`
-- `docs/BUILD_PROGRESS.md`
-- `docs/GO_LIVE_CLOUDFLARE.md`
-- Store / device checklists under `docs/`
-
-## Scripts
+## npm scripts
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | Next.js dev server |
+| `npm run dev` | Next.js development server |
+| `npm run build` / `start` | Production build & serve |
+| `npm run db:push` | Push Prisma schema |
+| `npm run db:seed` | Seed demo + accuracy pack |
+| `npm run db:studio` | Prisma Studio |
+| `npm run data:import-synthetic` | Import XLSX + train latency model |
 | `npm run mobile:patient` | Expo patient app |
-| `npm run db:push` / `db:seed` | Prisma |
 | `npm test` | Vitest |
-| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+
+---
+
+## Tests & quality
+
+```bash
+npm test
+npm run lint
+npx tsc --noEmit
+```
+
+CI workflow: `.github/workflows/deploy.yml` (runs lint/test/typecheck; Railway deploy only if `RAILWAY_TOKEN` secret is set).
+
+---
+
+## Docs
+
+| Doc | Topic |
+|-----|--------|
+| `docs/REACT_NATIVE_MIGRATION_AUDIT.md` | RN migration audit |
+| `docs/BUILD_PROGRESS.md` | Mobile build progress |
+| `docs/ACCURACY_DATASET.md` | Seed accuracy / annotations |
+| `docs/GO_LIVE_CLOUDFLARE.md` | Neon / Railway / Cloudflare go-live |
+| `data/synthetic/README.md` | Synthetic import + latency API |
+
+---
+
+## GitHub setup checklist
+
+1. Create or use repo: `techmunda21-rgb/Curevanta-Healthcare-x-TechMunda` (or your org/name).
+2. Ensure `.env` and secrets are **not** committed (see `.gitignore`).
+3. Push:
+
+```bash
+git add -A
+git status   # confirm no .env
+git commit -m "Initial Curevanta Control Tower monorepo"
+git branch -M main
+git remote add origin https://github.com/<owner>/<repo>.git   # if needed
+git push -u origin main
+```
+
+4. (Optional) Add GitHub Actions secret `RAILWAY_TOKEN` for deploy job.
+5. (Optional) Point Cloudflare DNS at your host per `docs/GO_LIVE_CLOUDFLARE.md`.
+
+---
+
+## Stack
+
+- **Web / API:** Next.js 15 · React 19 · TypeScript · Tailwind · Prisma · PostgreSQL · Auth.js · Zod  
+- **Mobile:** Expo Router · TanStack Query · shared `packages/*` · Flutter portals  
+- **Data / ML (ops):** Synthetic India XLSX · latency regression model · `GET/POST /api/ai/latency`  
+- **Deploy notes:** Neon SQL · Railway · Cloudflare DNS (see docs)
+
+---
+
+## Safety
+
+- Do **not** use synthetic patient rows as medical ground truth for diagnosis or prescriptions.  
+- Latency model predicts **operational ETA minutes** only — not clinical outcomes.  
+- Never commit production secrets, Neon passwords, or real PHI.
+
+---
+
+## License / ownership
+
+Private project — TechMunda × Curevanta. Contact the repository owner for access and contribution rules.

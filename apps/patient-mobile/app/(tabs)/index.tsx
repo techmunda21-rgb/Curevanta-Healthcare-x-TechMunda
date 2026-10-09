@@ -4,12 +4,12 @@ import { router } from "expo-router";
 export default function HomeTab() {
   return (
     <PatientHomeScreen
-      patientName="Aanya"
-      addressLabel="12 Palm Grove, Indiranagar"
+      patientName="Priya"
+      addressLabel="Indiranagar, Bengaluru"
       onFindCare={() => router.push("/(tabs)/care")}
       onChangeLocation={() => {}}
       onOpenNotifications={() => {}}
-      onTrackBooking={() => router.push("/(tabs)/bookings")}
+      onOpenProfile={() => router.push("/(tabs)/profile")}
       onSelectService={() => router.push("/(tabs)/care")}
     />
   );

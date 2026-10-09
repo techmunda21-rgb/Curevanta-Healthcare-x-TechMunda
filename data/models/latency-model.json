@@ -1,0 +1,17 @@
+{
+  "version": "latency-v1791355145116",
+  "sampleCount": 1000,
+  "maeMinutes": 0.18620518771086356,
+  "rmseMinutes": 0.23123934530138177,
+  "weights": {
+    "bias": 30.618064522397912,
+    "urgencyScore": -5.333486975304165,
+    "onlineScore": 0,
+    "experienceScore": -3.7729534377114047,
+    "ratingScore": -2.433441792892215,
+    "homeVisitScore": -1.7814206386494356,
+    "metroScore": -2.6882486597972624,
+    "careNeedScore": -2.76903184022332
+  },
+  "trainedAt": "2026-10-07T06:39:05.535Z"
+}

@@ -1227,3 +1227,119 @@ model CareBookingEvent {
 
   @@index([bookingId, createdAt])
 }
+
+// ─────────────────────────────────────────────
+// SYNTHETIC TRAINING DATA (India healthcare)
+// From Curevanta_India_Healthcare_Synthetic_Training_Data.xlsx
+// DEV / ML pipeline only — not real PHI.
+// ─────────────────────────────────────────────
+
+model SyntheticProvider {
+  id                 String   @id @default(cuid())
+  providerCode       String   @unique
+  state              String
+  city               String
+  providerType       String
+  specialty          String
+  qualification      String?
+  experienceYears    Int      @default(0)
+  languages          String?
+  workSetting        String?
+  homeVisitEligible  Boolean  @default(false)
+  teleconsultEligible Boolean  @default(false)
+  verificationStatus String?
+  availabilityStatus String?
+  ratingSimulated    Float?
+  sourceType         String   @default("SYNTHETIC")
+  createdAt          DateTime @default(now())
+
+  @@index([city, specialty])
+  @@index([availabilityStatus])
+}
+
+model SyntheticPatientPersona {
+  id                   String   @id @default(cuid())
+  patientCode          String   @unique
+  state                String
+  city                 String
+  ageBand              String?
+  genderSynthetic      String?
+  careNeedCategory     String?
+  urgencySynthetic     String?
+  preferredMode        String?
+  language             String?
+  mobilityAssistance   String?
+  bookingStatus        String?
+  paymentModeSynthetic String?
+  outcomeLabelSynthetic String?
+  sourceType           String   @default("SYNTHETIC")
+  createdAt            DateTime @default(now())
+
+  @@index([city, urgencySynthetic])
+  @@index([careNeedCategory])
+}
+
+model SyntheticCareerCandidate {
+  id                        String   @id @default(cuid())
+  candidateCode             String   @unique
+  state                     String
+  city                      String
+  careerTrack               String?
+  educationLevel            String?
+  experienceBand            String?
+  skill1                    String?
+  skill2                    String?
+  preferredWorkMode         String?
+  trainingNeed              String?
+  applicationStage          String?
+  assessmentScoreSimulated  Float?
+  sourceType                String   @default("SYNTHETIC")
+  createdAt                 DateTime @default(now())
+
+  @@index([careerTrack, applicationStage])
+}
+
+model HealthcareRoleTaxonomy {
+  id                String   @id @default(cuid())
+  roleCategory      String
+  exampleRole       String
+  typicalEducation  String?
+  curevantaModuleUse String?
+  officialReference String?
+  createdAt         DateTime @default(now())
+
+  @@index([roleCategory])
+}
+
+// Operational dispatch latency samples derived from synthetic personas
+model LatencyTrainingSample {
+  id                String   @id @default(cuid())
+  sampleKey         String   @unique
+  city              String
+  state             String
+  specialty         String
+  urgency           String
+  preferredMode     String
+  providerOnline    Boolean
+  experienceYears   Int
+  rating            Float
+  // Simulated minutes until provider acceptance / ETA start
+  labelLatencyMin   Float
+  featuresJson      Json
+  createdAt         DateTime @default(now())
+
+  @@index([city, urgency])
+  @@index([specialty])
+}
+
+model LatencyModelArtifact {
+  id            String   @id @default(cuid())
+  version       String   @unique
+  trainedAt     DateTime @default(now())
+  sampleCount   Int
+  maeMinutes    Float
+  rmseMinutes   Float
+  weightsJson   Json
+  notes         String?
+  isActive      Boolean  @default(false)
+}

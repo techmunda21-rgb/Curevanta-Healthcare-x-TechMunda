@@ -105,7 +105,7 @@ export const bookingDemo = {
 export const doctorAppDemo = {
   name: "Dr. Rohan Mehta",
   earningsToday: 2450,
-  completed: 4,
+  completed: 5,
   upcoming: 2,
   incoming: {
     service: "Doctor at Home",
@@ -114,9 +114,9 @@ export const doctorAppDemo = {
     countdownSec: 24,
   },
   todayBookings: [
+    { patient: "Priya Sharma", time: "Now", status: "On the way" },
     { patient: "Aarav Patel", time: "11:30 AM", status: "Upcoming" },
-    { patient: "Meera Iyer", time: "1:00 PM", status: "On the way" },
-    { patient: "Kabir Shah", time: "3:30 PM", status: "Upcoming" },
+    { patient: "Meera Iyer", time: "1:00 PM", status: "Upcoming" },
   ],
 };
 

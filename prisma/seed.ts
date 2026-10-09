@@ -558,6 +558,322 @@ async function main() {
     tasks.push(task);
   }
 
+  // ── Software accuracy + annotation dataset (still DEV SEED only) ──
+  const byCode = Object.fromEntries(tasks.map((t) => [t.taskCode, t]));
+  const accuracySpecs: Record<
+    string,
+    { description: string; techStack: string[]; prUrl?: string; outputUrl?: string }
+  > = {
+    "CUR-101": {
+      description:
+        "[SEED] Design tokens: primary #009B9A, spacing 4–64, motion 100–450ms. Acceptance: tokens exported for web + RN packages; contrast AA for textPrimary on background.",
+      techStack: ["TypeScript", "design-tokens"],
+      outputUrl: "/docs/DESIGN_SYSTEM.md",
+    },
+    "CUR-102": {
+      description:
+        "[SEED] Patient booking vertical slice UI. Acceptance: Home → Care → request; loading/empty/error states; no invented GPS. Annotate review comments on API contract drift.",
+      techStack: ["Expo", "React Native", "TanStack Query"],
+      prUrl: "https://github.com/example/curevanta/pull/102",
+    },
+    "CUR-105": {
+      description:
+        "[SEED] Auth + RBAC hardening. Acceptance: credentials Zod-validated; inactive users rejected; role on session JWT; audit on login success/fail.",
+      techStack: ["NextAuth", "Zod", "bcrypt"],
+      prUrl: "https://github.com/example/curevanta/pull/105",
+    },
+    "CUR-106": {
+      description:
+        "[SEED] Dispatch event schema (authoritative). Acceptance: booking states match CareBookingStatus; mobile must not invent transitions. Blocked pending architecture approval.",
+      techStack: ["Prisma", "PostgreSQL", "Zod"],
+    },
+    "CUR-109": {
+      description:
+        "[SEED] Playwright smoke: login → tasks list → create task → kanban. Acceptance: estimatedHours ≥ 0; seed banner visible; no PHI in fixtures.",
+      techStack: ["Playwright", "Vitest"],
+    },
+    "CUR-111": {
+      description:
+        "[SEED] CI: lint + test + typecheck on main; Railway deploy when token present. Acceptance: workflow green locally via npm test.",
+      techStack: ["GitHub Actions", "Prisma"],
+    },
+  };
+
+  for (const [code, spec] of Object.entries(accuracySpecs)) {
+    const task = byCode[code];
+    if (!task) continue;
+    await prisma.task.update({
+      where: { id: task.id },
+      data: {
+        description: spec.description,
+        techStack: spec.techStack,
+        prUrl: spec.prUrl,
+        outputUrl: spec.outputUrl,
+      },
+    });
+  }
+
+  await prisma.taskComment.createMany({
+    data: [
+      {
+        taskId: byCode["CUR-102"].id,
+        authorId: pm.id,
+        body: "[ANNOTATION][SEED] Accuracy check: Care CTA must call POST /api/mobile/bookings with Idempotency-Key; do not fake provider search progress.",
+      },
+      {
+        taskId: byCode["CUR-102"].id,
+        authorId: cto.id,
+        body: "[ANNOTATION][SEED] QA: verify empty Bookings state copy + Find Care CTA; font scale 150% on Home hierarchy.",
+      },
+      {
+        taskId: byCode["CUR-105"].id,
+        authorId: cto.id,
+        body: "[ANNOTATION][SEED] Security review: session cookies HttpOnly; no password hashes in logs; middleware allows /api/mobile without NextAuth cookie.",
+      },
+      {
+        taskId: byCode["CUR-106"].id,
+        authorId: founder.id,
+        body: "[ANNOTATION][SEED] Founder note: keep REQUEST_CREATED→SEARCHING→PROVIDER_NOTIFIED→PROVIDER_ACCEPTED→ON_THE_WAY as backend-authoritative.",
+      },
+      {
+        taskId: byCode["CUR-109"].id,
+        authorId: pm.id,
+        body: "[ANNOTATION][SEED] Regression: creating task with blank est. hours must default to 4h and never 500 Zod too_small.",
+      },
+      {
+        taskId: byCode["CUR-111"].id,
+        authorId: cto.id,
+        body: "[ANNOTATION][SEED] Deploy gate: DATABASE_URL from Neon; AUTH_SECRET set; never commit .env.",
+      },
+      {
+        taskId: byCode["CUR-101"].id,
+        authorId: pm.id,
+        body: "[ANNOTATION][SEED] Token parity: packages/design-tokens must match src/theme colors (primary #009B9A).",
+      },
+    ],
+  });
+
+  await prisma.taskActivity.createMany({
+    data: [
+      {
+        taskId: byCode["CUR-101"].id,
+        actorId: pm.id,
+        action: "STATUS_CHANGE",
+        fromValue: "IN_REVIEW",
+        toValue: "DONE",
+      },
+      {
+        taskId: byCode["CUR-102"].id,
+        actorId: pm.id,
+        action: "STATUS_CHANGE",
+        fromValue: "READY",
+        toValue: "IN_PROGRESS",
+      },
+      {
+        taskId: byCode["CUR-105"].id,
+        actorId: cto.id,
+        action: "STATUS_CHANGE",
+        fromValue: "IN_PROGRESS",
+        toValue: "IN_REVIEW",
+      },
+      {
+        taskId: byCode["CUR-106"].id,
+        actorId: cto.id,
+        action: "STATUS_CHANGE",
+        fromValue: "IN_PROGRESS",
+        toValue: "BLOCKED",
+      },
+      {
+        taskId: byCode["CUR-106"].id,
+        actorId: founder.id,
+        action: "ANNOTATION_FLAG",
+        fromValue: null,
+        toValue: "NEEDS_ARCHITECTURE_APPROVAL",
+      },
+      {
+        taskId: byCode["CUR-109"].id,
+        actorId: pm.id,
+        action: "STATUS_CHANGE",
+        fromValue: "IN_PROGRESS",
+        toValue: "QA",
+      },
+      {
+        taskId: byCode["CUR-102"].id,
+        actorId: cto.id,
+        action: "ACCURACY_CHECK",
+        fromValue: "mock_dispatch",
+        toValue: "real_api_booking_slice",
+      },
+    ],
+  });
+
+  await prisma.worklog.createMany({
+    data: [
+      {
+        employeeId: designer.id,
+        taskId: byCode["CUR-101"].id,
+        date: due(-4),
+        hours: 6,
+        description: "[SEED] Token export + RN elevation mapping",
+      },
+      {
+        employeeId: designer.id,
+        taskId: byCode["CUR-101"].id,
+        date: due(-3),
+        hours: 6,
+        description: "[SEED] Final QA pass on contrast",
+      },
+      {
+        employeeId: patient.id,
+        taskId: byCode["CUR-102"].id,
+        date: due(-1),
+        hours: 8,
+        description: "[SEED] Patient Home + Care booking hook",
+      },
+      {
+        employeeId: backend.id,
+        taskId: byCode["CUR-105"].id,
+        date: due(-2),
+        hours: 7,
+        description: "[SEED] Session + middleware mobile bypass",
+      },
+      {
+        employeeId: backend.id,
+        taskId: byCode["CUR-106"].id,
+        date: due(-1),
+        hours: 4,
+        description: "[SEED] Schema draft only — blocked",
+      },
+      {
+        employeeId: qa.id,
+        taskId: byCode["CUR-109"].id,
+        date: due(0),
+        hours: 5,
+        description: "[SEED] Smoke cases + hours validation check",
+      },
+      {
+        employeeId: devops.id,
+        taskId: byCode["CUR-111"].id,
+        date: due(-1),
+        hours: 6,
+        description: "[SEED] GitHub Actions workflow + railway.json",
+      },
+    ],
+  });
+
+  const qaUser = await prisma.user.findUniqueOrThrow({
+    where: { email: "qa@techmunda.com" },
+  });
+  const patientUser = await prisma.user.findUniqueOrThrow({
+    where: { email: "patient.dev@techmunda.com" },
+  });
+  const backendUser = await prisma.user.findUniqueOrThrow({
+    where: { email: "backend@techmunda.com" },
+  });
+
+  await prisma.standup.createMany({
+    data: [
+      {
+        userId: patientUser.id,
+        date: due(0),
+        yesterday: "[SEED] Wired Care → create booking API client",
+        today: "[SEED] Annotate tracking screen against ON_THE_WAY status",
+        blockers: "Waiting on live map package choice",
+      },
+      {
+        userId: backendUser.id,
+        date: due(0),
+        yesterday: "[SEED] Mobile accept atomic path + 409 conflict",
+        today: "[SEED] Accuracy audit logs for booking transitions",
+        blockers: "CUR-106 architecture approval",
+      },
+      {
+        userId: qaUser.id,
+        date: due(0),
+        yesterday: "[SEED] Listed accuracy cases for tasks form",
+        today: "[SEED] Annotate CUR-109 with regression notes",
+        blockers: "None",
+      },
+    ],
+  });
+
+  await prisma.testCase.createMany({
+    data: [
+      {
+        code: "TC-ACC-01",
+        title: "[SEED] Task create with empty estimatedHours defaults safely",
+        module: "Tasks",
+        steps: "Open /tasks → submit with blank hours → expect success, hours=4",
+        expected: "No Zod 500; task appears in list",
+        priority: "HIGH",
+      },
+      {
+        code: "TC-ACC-02",
+        title: "[SEED] Mobile booking idempotency",
+        module: "Mobile API",
+        steps: "POST /api/mobile/bookings twice with same Idempotency-Key",
+        expected: "Same booking id returned; no duplicate rows",
+        priority: "HIGH",
+      },
+      {
+        code: "TC-ACC-03",
+        title: "[SEED] Doctor double-accept conflict",
+        module: "Mobile API",
+        steps: "Accept same booking twice",
+        expected: "Second call HTTP 409 ACCEPT_CONFLICT",
+        priority: "HIGH",
+      },
+      {
+        code: "TC-ACC-04",
+        title: "[SEED] Annotation trail on blocked dispatch task",
+        module: "Tasks",
+        steps: "Open CUR-106 → verify comments + activity ANNOTATION_FLAG",
+        expected: "Founder annotation and BLOCKED status present",
+        priority: "MEDIUM",
+      },
+    ],
+  });
+
+  await prisma.auditLog.createMany({
+    data: [
+      {
+        actorId: founder.id,
+        action: "SEED_ACCURACY_PACK_APPLIED",
+        entity: "Project",
+        entityId: project.id,
+        after: {
+          pack: "software-accuracy-annotations",
+          tasksAnnotated: ["CUR-101", "CUR-102", "CUR-105", "CUR-106", "CUR-109", "CUR-111"],
+          note: "DEV SEED ONLY — not real company data",
+        },
+      },
+      {
+        actorId: cto.id,
+        action: "ACCURACY_CHECK",
+        entity: "Task",
+        entityId: byCode["CUR-102"].id,
+        before: { status: "READY" },
+        after: { status: "IN_PROGRESS", contract: "real_api_booking_slice" },
+      },
+      {
+        actorId: pm.id,
+        action: "ANNOTATION_ADDED",
+        entity: "Task",
+        entityId: byCode["CUR-109"].id,
+        after: { topic: "estimatedHours_regression" },
+      },
+      {
+        actorId: founder.id,
+        action: "LOGIN",
+        entity: "User",
+        entityId: founder.id,
+        after: { role: "FOUNDER", seed: true },
+      },
+    ],
+  });
+
+  console.log("   ✓ Software accuracy + annotation pack seeded (DEV ONLY)");
+
   const blockedDispatch = tasks.find((t) => t.taskCode === "CUR-106")!;
   await prisma.blocker.createMany({
     data: [

@@ -1,23 +1,22 @@
 import { colors, spacing } from "@curevanta/design-tokens";
 import {
-  Badge,
   Button,
-  Card,
   Heading,
   Row,
   Screen,
   Stack,
-  StatusChip,
   Text,
 } from "@curevanta/mobile-ui";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
+/** Showcase-aligned service grid (Curevanta Healthcare App Showcase) */
 const SERVICES = [
-  { id: "doctor", title: "Doctor at Home", subtitle: "Verified physicians" },
-  { id: "nurse", title: "Nurse at Home", subtitle: "Skilled nursing care" },
-  { id: "diagnostics", title: "Diagnostics", subtitle: "Lab collection" },
-  { id: "physio", title: "Physiotherapy", subtitle: "Recovery support" },
-  { id: "followup", title: "Follow-up", subtitle: "Continuity of care" },
+  { id: "doctor", title: "Doctor at Home" },
+  { id: "nurse", title: "Nurse at Home" },
+  { id: "diagnostics", title: "Diagnostics at Home" },
+  { id: "physio", title: "Physiotherapy" },
+  { id: "elder", title: "Elder Care" },
+  { id: "followup", title: "Follow-up Care" },
 ] as const;
 
 type PatientHomeScreenProps = {
@@ -26,132 +25,126 @@ type PatientHomeScreenProps = {
   onFindCare?: () => void;
   onChangeLocation?: () => void;
   onOpenNotifications?: () => void;
-  onTrackBooking?: () => void;
+  onOpenProfile?: () => void;
   onSelectService?: (id: string) => void;
 };
 
 export function PatientHomeScreen({
-  patientName = "there",
-  addressLabel = "Set your care address",
+  patientName = "Priya",
+  addressLabel = "Indiranagar, Bengaluru",
   onFindCare,
   onChangeLocation,
   onOpenNotifications,
-  onTrackBooking,
+  onOpenProfile,
   onSelectService,
 }: PatientHomeScreenProps) {
   return (
     <Screen>
-      <Stack gap={6}>
+      <Stack gap={5}>
         <Row style={styles.header}>
-          <Stack gap={1} style={{ flex: 1 }}>
-            <Text variant="caption" color={colors.textMuted}>
-              Good day
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Change location"
+            onPress={onChangeLocation}
+            style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6 }}
+          >
+            <Text variant="titleMedium" color={colors.primary}>
+              ⌖
             </Text>
-            <Heading level={2}>Hello, {patientName}</Heading>
-          </Stack>
+            <Text variant="titleMedium" numberOfLines={1} style={{ flex: 1 }}>
+              {addressLabel}
+            </Text>
+          </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Notifications"
             onPress={onOpenNotifications}
             style={styles.iconBtn}
           >
-            <Text variant="titleMedium" color={colors.primary}>
-              ●
-            </Text>
+            <Text variant="titleMedium">🔔</Text>
           </Pressable>
-          <View style={styles.avatar} accessibilityLabel="Profile">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Profile"
+            onPress={onOpenProfile}
+            style={styles.avatar}
+          >
             <Text variant="titleMedium" color={colors.primaryPressed}>
               {patientName.slice(0, 1).toUpperCase()}
             </Text>
-          </View>
+          </Pressable>
         </Row>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Change location"
-          onPress={onChangeLocation}
-          style={styles.location}
-        >
-          <Stack gap={1} style={{ flex: 1 }}>
-            <Text variant="labelMedium" color={colors.textMuted}>
-              CARE ADDRESS
-            </Text>
-            <Text variant="titleMedium" numberOfLines={1}>
-              {addressLabel}
-            </Text>
-          </Stack>
-          <Text variant="labelLarge" color={colors.primary}>
-            Change
+        <Stack gap={1}>
+          <Heading level={2}>Good Morning, {patientName} 👋</Heading>
+          <Text variant="bodyMedium" color={colors.textSecondary}>
+            How can we help you today?
           </Text>
-        </Pressable>
+        </Stack>
+
+        <View style={styles.search}>
+          <Text variant="bodyMedium" color={colors.textMuted}>
+            🔍
+          </Text>
+          <TextInput
+            placeholder="Search for services, doctors..."
+            placeholderTextColor={colors.textMuted}
+            style={styles.searchInput}
+            accessibilityLabel="Search for services, doctors"
+          />
+        </View>
 
         <View style={styles.hero}>
-          <Heading level={1} color="#FFFFFF">
-            Care, when and where you need it.
-          </Heading>
-          <Text variant="bodyMedium" color="rgba(255,255,255,0.88)" style={{ marginTop: spacing[2] }}>
-            Book verified home care with clear status every step of the way.
+          <Text variant="heading2" color="#FFFFFF">
+            Care when you need it, at home
+          </Text>
+          <Text
+            variant="bodySmall"
+            color="rgba(255,255,255,0.88)"
+            style={{ marginTop: spacing[2] }}
+          >
+            Verified doctors · Live tracking
           </Text>
           <Button
             label="Find Care"
             variant="secondary"
             onPress={onFindCare}
             style={styles.heroCta}
-            accessibilityHint="Starts finding care near you"
           />
         </View>
 
-        <Stack gap={3}>
-          <Heading level={3}>Services</Heading>
-          <View style={styles.serviceGrid}>
-            {SERVICES.map((service) => (
-              <Card
-                key={service.id}
-                onPress={() => onSelectService?.(service.id)}
-                accessibilityLabel={service.title}
-                style={styles.serviceCard}
-              >
-                <Text variant="titleMedium">{service.title}</Text>
-                <Text variant="bodySmall" color={colors.textSecondary}>
-                  {service.subtitle}
+        <Row style={{ justifyContent: "space-between" }}>
+          <Heading level={3}>Our Services</Heading>
+          <Pressable onPress={onFindCare} accessibilityRole="button">
+            <Text variant="labelLarge" color={colors.primary}>
+              See All
+            </Text>
+          </Pressable>
+        </Row>
+
+        <View style={styles.serviceGrid}>
+          {SERVICES.map((service) => (
+            <Pressable
+              key={service.id}
+              accessibilityRole="button"
+              accessibilityLabel={service.title}
+              onPress={() => onSelectService?.(service.id)}
+              style={({ pressed }) => [
+                styles.serviceCard,
+                pressed && { transform: [{ scale: 0.98 }] },
+              ]}
+            >
+              <View style={styles.serviceIcon}>
+                <Text variant="titleLarge" color={colors.primary}>
+                  +
                 </Text>
-              </Card>
-            ))}
-          </View>
-        </Stack>
-
-        <Stack gap={3}>
-          <Heading level={3}>Active booking</Heading>
-          <Card
-            onPress={onTrackBooking}
-            accessibilityLabel="Track active booking"
-            style={styles.activeCard}
-          >
-            <Row style={{ justifyContent: "space-between" }}>
-              <Text variant="titleLarge">Dr. Meera Shah</Text>
-              <StatusChip label="On the way" tone="info" />
-            </Row>
-            <Text variant="bodyMedium" color={colors.textSecondary}>
-              General physician · ETA 12 min
-            </Text>
-            <Row style={{ marginTop: spacing[2], justifyContent: "space-between" }}>
-              <Badge label="Verified" tone="success" />
-              <Text variant="labelLarge" color={colors.primary}>
-                Track
+              </View>
+              <Text variant="labelMedium" align="center">
+                {service.title}
               </Text>
-            </Row>
-          </Card>
-        </Stack>
-
-        <Stack gap={3}>
-          <Heading level={3}>Recommended care</Heading>
-          <Card>
-            <Text variant="titleMedium">Nurse follow-up visit</Text>
-            <Text variant="bodySmall" color={colors.textSecondary}>
-              Continue recovery with a scheduled home nurse visit.
-            </Text>
-          </Card>
-        </Stack>
+            </Pressable>
+          ))}
+        </View>
       </Stack>
     </Screen>
   );
@@ -180,25 +173,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.primarySoft,
   },
-  location: {
+  search: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: spacing[4],
+    gap: 8,
+    minHeight: 48,
+    paddingHorizontal: 16,
     borderRadius: 16,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
   },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textPrimary,
+    paddingVertical: 10,
+  },
   hero: {
-    borderRadius: 24,
-    padding: spacing[6],
+    borderRadius: 20,
+    padding: spacing[5],
     backgroundColor: colors.primary,
-    overflow: "hidden",
   },
   heroCta: {
-    marginTop: spacing[5],
-    backgroundColor: "#FFFFFF",
+    marginTop: spacing[4],
     alignSelf: "flex-start",
   },
   serviceGrid: {
@@ -207,11 +205,24 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   serviceCard: {
-    width: "47%",
+    width: "30%",
     flexGrow: 1,
-    minWidth: 140,
-  },
-  activeCard: {
+    minWidth: 96,
+    alignItems: "center",
     gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  serviceIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primarySoft,
   },
 });
