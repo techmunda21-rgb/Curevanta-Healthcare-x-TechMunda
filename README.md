@@ -6,6 +6,39 @@ Monorepo for **Curevanta** healthcare ops (Control Tower CRM), patient/doctor we
 
 ---
 
+## Live local (quick)
+
+After `docker compose up -d`, `npm install`, `npx prisma db push`, and `npm run db:seed`:
+
+```bash
+npm run dev
+# → http://localhost:3000
+```
+
+| Port | Service |
+|------|---------|
+| **3000** | Next.js Control Tower + patient/doctor web (default) |
+| **5432** | PostgreSQL (`docker compose`) |
+
+| URL | Purpose |
+|-----|---------|
+| http://localhost:3000/login | Sign in |
+| http://localhost:3000/patient/home | Patient showcase |
+| http://localhost:3000/doctor | Doctor demo |
+| http://localhost:3000/dashboard | Ops Control Tower |
+
+**Web demo passwords are all `Founder@2026`:**
+
+| Role | Email |
+|------|--------|
+| Patient | `patient.dev@techmunda.com` |
+| Doctor | `doctor.dev@techmunda.com` |
+| Founder / Ops | `founder@techmunda.com` |
+
+If port 3000 is busy: `npx next dev -p 3001` and open http://localhost:3001 instead.
+
+---
+
 ## Requirements
 
 | Tool | Version |
@@ -143,6 +176,8 @@ npx next dev -p 3001
 
 | Role | Email | Password |
 |------|--------|----------|
+| Patient (web chip) | `patient.dev@techmunda.com` | `Founder@2026` |
+| Doctor (web chip) | `doctor.dev@techmunda.com` | `Founder@2026` |
 | Founder / Ops | `founder@techmunda.com` | `Founder@2026` |
 | CTO | `cto@techmunda.com` | `Founder@2026` |
 | PM | `pm@techmunda.com` | `Founder@2026` |
